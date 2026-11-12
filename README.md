@@ -1,158 +1,145 @@
-<h1 align="center">✨ BG Studio</h1>
+# 🔍 CLIP Text-to-Image Search
 
-<p align="center">
-  Remove the background from your photo and place yourself anywhere, in just a few clicks.
-</p>
+Search images using natural language. Type a description like *"a dog running on the beach"* and retrieve the most relevant photos, powered by OpenAI's **CLIP** and **FAISS**.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.9+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/UI-Streamlit-ff4b4b?logo=streamlit&logoColor=white" alt="Streamlit">
-  <img src="https://img.shields.io/badge/AI-rembg%20(U²--Net)-8b5cf6" alt="rembg">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-</p>
+[
 
----
+![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)
 
-## 📖 About
+](https://colab.research.google.com/github/KamandNajari/clip-text-to-image-search/blob/main/text_to_image_search_clip.ipynb)
 
-**BG Studio** is a small web app that lets you:
 
-1. Upload a photo of yourself
-2. Automatically detect the person and remove the background
-3. Upload a second image and use it as your new background
-4. Download the final result
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 
-No design skills and no Photoshop needed. Everything runs on your own computer, so your photos are never uploaded to any external server.
 
----
 
-## 🚀 Features
 
-- 🧍 **Automatic person detection**: an AI segmentation model finds the person in the photo and cuts out everything else.
-- 🪟 **Transparent cutout**: get a clean PNG with an empty (transparent) background, previewed on a checkerboard so you can see exactly what was removed.
-- 🖼️ **Custom background upload**: drop in any image (a beach, a city, a classroom, anything) and it becomes your new background.
-- 📐 **Smart background fitting**: the new background is automatically resized and cropped to match your photo, with no stretching.
-- ⬇️ **Two downloads**: save the transparent cutout, the final composed image, or both.
-- 🎨 **Modern interface**: gradient theme, drag-and-drop upload boxes, and a clear step-by-step flow.
-- ⚡ **Fast repeat use**: results are cached, so changing the background doesn't re-run the AI model on your photo.
-- 🔒 **Private by design**: all processing happens locally.
+![PyTorch](https://img.shields.io/badge/PyTorch-DeepLearning-ee4c2c.svg)
+
+
+
+
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
+
 
 ---
 
-## 🧠 How it works
+## ✨ Features
+
+- **Zero-shot text-to-image retrieval** with a pretrained CLIP model (no training required)
+- **Fast similarity search** using a FAISS index over normalized embeddings
+- **Quantitative evaluation** with Recall@1 / Recall@5 / Recall@10
+- **Interactive Gradio demo** to search the Flickr8k test images
+- **Search your own images** from the demo (experimental)
+- Runs entirely in **Google Colab** on a free T4 GPU
+
+## 💡 Example Queries
+
+- `a dog running on the beach`
+- `children playing in the snow`
+- `a man riding a bike on a street`
+- `people sitting on a bench`
+
+## 🧠 How It Works
+
+1. **Embedding:** CLIP has an image encoder and a text encoder that map their inputs into the same 512-dimensional vector space. Matching images and captions end up close together.
+2. **Indexing:** All images are embedded once, L2-normalized, and stored in a FAISS `IndexFlatIP` index (inner product = cosine similarity on normalized vectors).
+3. **Search:** The text query is embedded with the text encoder, and the top-k images with the highest cosine similarity are returned.
 
 ```
-Your photo ──► rembg (U²-Net model) ──► transparent PNG (person only)
-                                              │
-New background ──► resized + cropped to fit ──┴──► composited image ──► download
+Text query ──► CLIP text encoder ──► query vector ─┐
+                                                   ├─► cosine similarity ──► Top-k images
+Images ──► CLIP image encoder ──► image vectors ───┘
 ```
 
-1. **Segmentation**: [rembg](https://github.com/danielgatis/rembg) runs a U²-Net neural network that predicts which pixels belong to the person (foreground) and which belong to the background. The background pixels are made transparent.
-2. **Background fitting**: [Pillow](https://python-pillow.org/) resizes and center-crops the new background so it exactly matches the size of your photo.
-3. **Compositing**: the transparent cutout is pasted on top of the new background using its alpha channel, which keeps the edges smooth.
-4. **UI**: [Streamlit](https://streamlit.io/) provides the web interface, with custom CSS for the look and feel.
+## 📊 Results
 
----
+Evaluated on the **Flickr8k test split** (1,000 images, 5,000 captions). For each caption, the model must retrieve its ground-truth image among all 1,000 images.
 
-## 🛠️ Installation
+| Model | Dataset | Recall@1 | Recall@5 | Recall@10 |
+|-------|---------|:--------:|:--------:|:---------:|
+| CLIP ViT-B/32 (zero-shot) | Flickr8k test | 53.76 | 80.80 | 88.86 |
 
-### Requirements
+> Recall@K = percentage of captions whose correct image appears in the top K results.
 
-- Python 3.9 or newer
-- pip
+## 🚀 Quick Start
 
-### Steps
+### Option 1: Google Colab (recommended)
+
+1. Click the **Open in Colab** badge above.
+2. Go to **Runtime → Change runtime type → T4 GPU**.
+3. Run all cells (**Runtime → Run all**).
+4. Change the query in the search cell:
+   ```python
+   show_results("a dog running on the beach")
+   ```
+
+### Option 2: Run locally
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/kamandNajari/bg-studio.git
-cd bg-studio
-
-# 2. Create a virtual environment
-python3 -m venv venv
-
-# 3. Activate it
-source venv/bin/activate        # Linux / macOS
-venv\Scripts\activate           # Windows
-
-# 4. Install the dependencies
+git clone https://github.com/KamandNajari/clip-text-to-image-search.git
+cd clip-text-to-image-search
 pip install -r requirements.txt
-
-# 5. Run the app
-streamlit run app.py
+jupyter notebook text_to_image_search_clip.ipynb
 ```
 
-Then open the link shown in your terminal (usually `http://localhost:8501`).
+A GPU is recommended but not required.
 
-> **Note:** the first time you remove a background, rembg downloads its AI model (around 170 MB). This happens only once, so the first run will be slower.
+## 🖥️ Gradio Demo
 
----
+The last notebook cell launches a Gradio app with two tabs:
 
-## 🎯 Usage
+1. **Flickr8k dataset:** type a query and get the best matching images from the 1,000 test images.
+2. **Your own images (experimental):** upload your photos, click **Build index**, then type a query and click **Search**. This tab has not been fully tested yet. The index is built in memory and is not stored anywhere.
 
-1. **Upload your photo**: drag and drop a `.png`, `.jpg`, `.jpeg` or `.webp` image into the first box.
-2. **Wait a moment**: the app removes the background and shows your cutout on a checkerboard. Download it if you only need the transparent version.
-3. **Choose a new background**: upload any image in the second box.
-4. **Get your result**: the final image appears instantly, ready to download.
+## 🛠️ Tech Stack
 
-For best results, use a photo where the person is clearly visible and well lit.
+- [PyTorch](https://pytorch.org/) and [Hugging Face Transformers](https://huggingface.co/docs/transformers) (CLIP)
+- [FAISS](https://github.com/facebookresearch/faiss) for vector search
+- [Hugging Face Datasets](https://huggingface.co/docs/datasets) (Flickr8k)
+- [Gradio](https://www.gradio.app/) for the web interface
+- NumPy, Matplotlib, Pillow
 
----
-
-## 📁 Project structure
+## 📁 Project Structure
 
 ```
-bg-studio/
-├── app.py              # Streamlit app (UI + image processing)
-├── requirements.txt    # Python dependencies
-└── README.md           # You are here
+clip-text-to-image-search/
+├── text_to_image_search_clip.ipynb   # Main notebook
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── .gitignore
 ```
 
----
+## ⚠️ Limitations
 
-## 🧰 Tech stack
+- The built-in search covers only the 1,000 Flickr8k test images; queries with no matching content return the closest images anyway.
+- The model understands **English** queries only.
+- Zero-shot performance; the model is not fine-tuned on this dataset.
 
-| Tool | Purpose |
-|------|---------|
-| [Python](https://www.python.org/) | Main language |
-| [Streamlit](https://streamlit.io/) | Web interface |
-| [rembg](https://github.com/danielgatis/rembg) | AI background removal (U²-Net) |
-| [Pillow](https://python-pillow.org/) | Image resizing and compositing |
+## 🔮 Future Work
 
----
+- [ ] Fully test and polish the "Your own images" tab
+- [ ] Multilingual queries (including Persian) with a multilingual CLIP model
+- [ ] Compare more models (CLIP ViT-L/14, SigLIP, OpenCLIP)
+- [ ] Fine-tune CLIP on a custom dataset and report the improvement
+- [ ] Deploy a permanent demo on Hugging Face Spaces
+- [ ] Refactor into a reusable `src/` package with `app.py`
 
-## 🗺️ Roadmap
+## 📚 References
 
-- [ ] Blur option for the original background
-- [ ] Solid color and gradient backgrounds
-- [ ] Move, scale and flip the person on the new background
-- [ ] Batch processing for multiple photos
-- [ ] Add a soft shadow under the person
-- [ ] Deploy a live demo
+- Radford et al., *Learning Transferable Visual Models From Natural Language Supervision* (CLIP), 2021
+- Johnson et al., *Billion-scale similarity search with GPUs* (FAISS), 2017
+- Hodosh et al., *Framing Image Description as a Ranking Task* (Flickr8k), 2013
 
----
+## 📄 License
 
-## 🤝 Contributing
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-Ideas and pull requests are welcome!
-
-1. Fork the project
-2. Create your branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m "Add my feature"`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Open a pull request
-
----
-
-## 📜 License
-
-Distributed under the MIT License.
-
----
-
-## 👩‍💻 Author
+## 👤 Author
 
 **Kamand Najari**
-GitHub: [@kamandNajari](https://github.com/kamandNajari)
+GitHub: [@KamandNajari](https://github.com/KamandNajari)
 
-If you like this project, consider giving it a ⭐!
+⭐ If you find this project useful, please consider giving it a star!
