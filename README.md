@@ -1,6 +1,6 @@
 # 🔍 CLIP Text-to-Image Search
 
-Search images using natural language. Type a description like *"a dog running on the beach"* and retrieve the most relevant photos, powered by OpenAI's **CLIP** and **FAISS**.
+A text-to-image search engine built with OpenAI's **CLIP** and **FAISS**. Type a description like *"a dog running on the beach"* and get the most relevant images.
 
 [
 
@@ -25,13 +25,19 @@ Search images using natural language. Type a description like *"a dog running on
 
 ---
 
-## ✨ Features
+## ⭐ Two Main Features
 
-- **Zero-shot text-to-image retrieval** with a pretrained CLIP model (no training required)
-- **Fast similarity search** using a FAISS index over normalized embeddings
-- **Quantitative evaluation** with Recall@1 / Recall@5 / Recall@10
-- **Interactive Gradio demo** to search the Flickr8k test images
-- **Search your own images** from the demo (experimental)
+1. **Search a built-in dataset:** search the 1,000 images of the Flickr8k test split with natural-language queries, and evaluate retrieval quality with Recall@1 / Recall@5 / Recall@10.
+2. **Search your own images:** upload your own photos in the Gradio demo, build an index in seconds, and search through them with text.
+
+Both features use the same pretrained CLIP model (zero-shot, no training required).
+
+## ✨ Highlights
+
+- Pretrained **CLIP ViT-B/32** maps images and text into one shared 512-dimensional space
+- **FAISS** index over L2-normalized embeddings (cosine similarity)
+- Quantitative evaluation on Flickr8k (1,000 images, 5,000 captions)
+- Interactive **Gradio** demo with two tabs, one for each feature
 
 ## 💡 Example Queries
 
@@ -42,8 +48,8 @@ Search images using natural language. Type a description like *"a dog running on
 
 ## 🧠 How It Works
 
-1. **Embedding:** CLIP has an image encoder and a text encoder that map their inputs into the same 512-dimensional vector space. Matching images and captions end up close together.
-2. **Indexing:** All images are embedded once, L2-normalized, and stored in a FAISS `IndexFlatIP` index (inner product = cosine similarity on normalized vectors).
+1. **Embedding:** CLIP has an image encoder and a text encoder that map their inputs into the same vector space. Matching images and captions end up close together.
+2. **Indexing:** All images are embedded once, L2-normalized, and stored in a FAISS `IndexFlatIP` index (inner product = cosine similarity on normalized vectors). For your own images, the embeddings are kept in memory for the current session.
 3. **Search:** The text query is embedded with the text encoder, and the top-k images with the highest cosine similarity are returned.
 
 ```
@@ -51,6 +57,24 @@ Text query ──► CLIP text encoder ──► query vector ─┐
                                                    ├─► cosine similarity ──► Top-k images
 Images ──► CLIP image encoder ──► image vectors ───┘
 ```
+
+## 🖥️ Gradio Demo
+
+The last notebook cell launches a Gradio app with two tabs.
+
+**Tab 1: Flickr8k dataset**
+1. Type an English description.
+2. Choose the number of results.
+3. Click **Search** to see the best matching images with their similarity scores.
+
+**Tab 2: Your own images**
+1. Upload your images.
+2. Click **Build index** and wait for the "Indexed N images" message.
+3. Type an English description and click **Search**.
+
+The index of your uploaded images is built in memory for the current session and is not stored anywhere.
+
+> Note: the "Your own images" tab is newer than the rest of the project and has been tested less. Please open an issue if you run into a problem.
 
 ## 📊 Results
 
@@ -72,13 +96,6 @@ jupyter notebook text_to_image_search_clip.ipynb
 ```
 
 A GPU is recommended but not required.
-
-## 🖥️ Gradio Demo
-
-The last notebook cell launches a Gradio app with two tabs:
-
-1. **Flickr8k dataset:** type a query and get the best matching images from the 1,000 test images.
-2. **Your own images (experimental):** upload your photos, click **Build index**, then type a query and click **Search**. This tab has not been fully tested yet. The index is built in memory and is not stored anywhere.
 
 ## 🛠️ Tech Stack
 
@@ -107,7 +124,6 @@ clip-text-to-image-search/
 
 ## 🔮 Future Work
 
-- [ ] Fully test and polish the "Your own images" tab
 - [ ] Multilingual queries (including Persian) with a multilingual CLIP model
 - [ ] Compare more models (CLIP ViT-L/14, SigLIP, OpenCLIP)
 - [ ] Fine-tune CLIP on a custom dataset and report the improvement
