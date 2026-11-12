@@ -32,7 +32,6 @@ Search images using natural language. Type a description like *"a dog running on
 - **Quantitative evaluation** with Recall@1 / Recall@5 / Recall@10
 - **Interactive Gradio demo** to search the Flickr8k test images
 - **Search your own images** from the demo (experimental)
-- Runs entirely in **Google Colab** on a free T4 GPU
 
 ## 💡 Example Queries
 
@@ -64,18 +63,6 @@ Evaluated on the **Flickr8k test split** (1,000 images, 5,000 captions). For eac
 > Recall@K = percentage of captions whose correct image appears in the top K results.
 
 ## 🚀 Quick Start
-
-### Option 1: Google Colab (recommended)
-
-1. Click the **Open in Colab** badge above.
-2. Go to **Runtime → Change runtime type → T4 GPU**.
-3. Run all cells (**Runtime → Run all**).
-4. Change the query in the search cell:
-   ```python
-   show_results("a dog running on the beach")
-   ```
-
-### Option 2: Run locally
 
 ```bash
 git clone https://github.com/KamandNajari/clip-text-to-image-search.git
@@ -142,4 +129,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 **Kamand Najari**
 GitHub: [@KamandNajari](https://github.com/KamandNajari)
 
-⭐ If you find this project useful, please consider giving it a star!
+Thanks for visiting 🤍
